@@ -83,6 +83,121 @@ app.post("/login", async (req, res) => {
   });
 });
 
+// SERVICIOS WEB - CLUB UNION VOLEY
+ // Lista temporal de jugadores
+ const jugadores = [];
+
+ // Consultar todos los jugadores
+ app.get("/jugadores", (req, res) => {
+   return res.status(200).json({
+     mensaje: "Lista de jugadores del Club Unión Vóley",
+     jugadores: jugadores
+   });
+ });
+
+ // Registrar un jugador
+ app.post("/jugadores", (req, res) => {
+   const { nombre, edad, posicion } = req.body || {};
+
+   if (
+     typeof nombre !== "string" ||
+     !nombre.trim() ||
+     !Number.isInteger(edad) ||
+     edad < 6 ||
+     edad > 100 ||
+     typeof posicion !== "string" ||
+     !posicion.trim()
+   ) {
+     return res.status(400).json({
+       mensaje: "Datos del jugador inválidos."
+     });
+   }
+
+   const jugador = {
+     id: jugadores.length
+       ? Math.max(...jugadores.map(j => j.id)) + 1
+       : 1,
+     nombre: nombre.trim(),
+     edad,
+     posicion: posicion.trim()
+   };
+
+   jugadores.push(jugador);
+
+   return res.status(201).json({
+     mensaje: "Jugador registrado satisfactoriamente.",
+     jugador
+   });
+ });
+
+ // Actualizar los datos de un jugador
+ app.put("/jugadores/:id", (req, res) => {
+   const id = Number(req.params.id);
+   const { nombre, edad, posicion } = req.body || {};
+
+   if (!Number.isInteger(id) || id < 1) {
+     return res.status(400).json({
+       mensaje: "ID inválido."
+     });
+   }
+
+   const jugador = jugadores.find(j => j.id === id);
+
+   if (!jugador) {
+     return res.status(404).json({
+       mensaje: "Jugador no encontrado."
+     });
+   }
+
+   if (
+     typeof nombre !== "string" ||
+     !nombre.trim() ||
+     !Number.isInteger(edad) ||
+     edad < 6 ||
+     edad > 100 ||
+     typeof posicion !== "string" ||
+     !posicion.trim()
+   ) {
+     return res.status(400).json({
+       mensaje: "Datos del jugador inválidos."
+     });
+   }
+
+   jugador.nombre = nombre.trim();
+   jugador.edad = edad;
+   jugador.posicion = posicion.trim();
+
+   return res.status(200).json({
+     mensaje: "Jugador actualizado satisfactoriamente.",
+     jugador
+   });
+ });
+
+ // Eliminar un jugador por su ID
+ app.delete("/jugadores/:id", (req, res) => {
+   const id = Number(req.params.id);
+
+   if (!Number.isInteger(id) || id < 1) {
+     return res.status(400).json({
+       mensaje: "ID inválido."
+     });
+   }
+
+   const indice = jugadores.findIndex(j => j.id === id);
+
+   if (indice === -1) {
+     return res.status(404).json({
+       mensaje: "Jugador no encontrado."
+     });
+   }
+
+   jugadores.splice(indice, 1);
+
+   return res.status(200).json({
+     mensaje: "Jugador eliminado satisfactoriamente."
+   });
+ });
+
 // Iniciar el servidor web.
 app.listen(3000, () => {
   console.log("API Club Unión Vóley: http://localhost:3000");
